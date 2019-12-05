@@ -1,7 +1,7 @@
 import sys
 
 def calcualte_fuel(mass: int):
-    return max(int(mass/3) - 2, 0)
+    return max(mass // 3 - 2, 0)
 
 def calcualte_module_fuel(mass: int):
     last_mass = mass
