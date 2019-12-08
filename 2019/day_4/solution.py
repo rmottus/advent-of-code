@@ -28,10 +28,9 @@ def main():
     
     # Similarilly, we can count the number of increasing numbers of length K in base N:
     # If k = 1, there are N
-    # If k = 2, there are (N-1) * N / 2
+    # If k = 2, there are N * (N-1)/2
     ## There are (N-1) that start with 0, N-2 that start with 1, ...
-    # Note: We are just subbing N-1 for N in the above equations
-    # In general, (N-1) * (N)/2 * (N+1)/3 ... * (N+k-2)/k
+    # In general, N * (N-1)/2 * (N-2)/3 * ... * (N-k+1)/k
 
     # Any non-decreasing sequence that does not contain consecutive repeated digits must be an increasing sequence
     # So the difference of the two formula above is the total number of non-decreasing sequences of length k in base N
@@ -39,7 +38,7 @@ def main():
 
     # Note: We are working with 6 digit numbers, but we do not allow leading 0s, and since they are non-decreasing, this means there will be no 0s
     #       so we are effectively working in base 9
-    # Then there are 9 * 10/2 * 11/3 * 12/4 * 13/5 * 14/6 - 8* 9/2 * 10/3 * 11/4 * 12/5 * 13/6 = 1287 total passwords with length 6
+    # Then there are 9 * 10/2 * 11/3 * 12/4 * 13/5 * 14/6 - 9 * 8/2 * 7/3 * 6/4 * 5/5 * 4/6 = 2919 total passwords with length 6
     # But, how many are between the inputs?
     # There should be some way to count this without actually generating number, but I'm not going to spend too long thinking about it
 
@@ -68,7 +67,9 @@ def main():
                         inc[exp][first_digit].append(to_add + num)
 
     final_non_dec = list(itertools.chain.from_iterable(non_dec[-1]))
+    print(len(final_non_dec))
     final_inc = list(itertools.chain.from_iterable(inc[-1]))
+    print(len(final_inc))
 
     result = [ i for i in final_non_dec if i not in final_inc and i > min and i < max ]
     print(f"Count of non-decreasing numbers with at least one repeated consecutive digit between {min} and {max}: {len(result)}")
