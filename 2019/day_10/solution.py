@@ -1,5 +1,6 @@
 import sys
 from collections import  defaultdict
+from math import atan2, pi
 
 def main():
     astroid_locations = defaultdict(lambda: [])
@@ -17,7 +18,7 @@ def main():
     # print(astroid_locations)
     rows_with_astroids = list(astroid_locations.keys())
 
-    visible_astroids = defaultdict(lambda: defaultdict(lambda: 0))
+    visible_astroids = defaultdict(lambda: defaultdict(lambda: []))
     for row in range(len(rows_with_astroids)):
         j = rows_with_astroids[row]
         cols_with_astroids = astroid_locations[j]
@@ -28,8 +29,8 @@ def main():
 
             # Find next astroid to the right in the same row
             if col + 1 < len(cols_with_astroids):
-                visible_astroids[j][i] += 1
-                visible_astroids[j][cols_with_astroids[col + 1]] += 1
+                visible_astroids[j][i].append([cols_with_astroids[col + 1], j])
+                visible_astroids[j][cols_with_astroids[col + 1]].append([i, j])
 
             vis_from_cur = []
             for check_j in rows_with_astroids[row+1:]:
@@ -37,8 +38,8 @@ def main():
                     if check_i == i:
                         # Would be a vertical line
                         if not any([ vis_i == i for [vis_i, vis_j] in vis_from_cur ]):
-                            visible_astroids[j][i] += 1
-                            visible_astroids[check_j][check_i] += 1
+                            visible_astroids[j][i].append([check_i, check_j])
+                            visible_astroids[check_j][check_i].append([i, j])
                             vis_from_cur.append([check_i, check_j])
                         continue
 
@@ -48,21 +49,36 @@ def main():
                     m = (check_j - j) / (check_i - i)
                     b = j - m * i
                     if not any([ vis_j == round(m * vis_i + b, 6) for [vis_i, vis_j] in vis_from_cur ]):
-                        visible_astroids[j][i] += 1
-                        visible_astroids[check_j][check_i] += 1
+                        visible_astroids[j][i].append([check_i, check_j])
+                        visible_astroids[check_j][check_i].append([i, j])
                         vis_from_cur.append([check_i, check_j])
 
     best_location = []
     best_location_astroids = -1
+    visible_from_best = []
     for j in visible_astroids.keys():
         for i in visible_astroids[j]:
-            visible_from_here = visible_astroids[j][i]
+            visible_from_here = len(visible_astroids[j][i])
             # print([i,j], visible_from_here)
             if visible_from_here > best_location_astroids:
                 best_location = [i, j]
                 best_location_astroids = visible_from_here
+                visible_from_best = visible_astroids[j][i]
 
     print(f"Best location is {best_location} with {best_location_astroids}")
+
+    for location in visible_from_best:
+        # Y values are flipped in this example (increasing Y goes down the graph)
+        angle_to_loc = atan2( best_location[1] - location[1], location[0] - best_location[0])
+        # Rotate axes 90 degress so that the laser starts firing upwards
+        angle_to_loc = angle_to_loc - pi/2
+        # Normalize to [0, 2*pi]
+        angle_to_loc = angle_to_loc if angle_to_loc > 0 else angle_to_loc + 2 * pi
+        location.append(angle_to_loc)
+
+    # Lazer moves anticlockwise, so reverse sort
+    sorted_astroids = sorted(visible_from_best, key=lambda loc: -loc[2])
+    print(f"200th astroid destroyed is at {sorted_astroids[199]}")
 
 
 
