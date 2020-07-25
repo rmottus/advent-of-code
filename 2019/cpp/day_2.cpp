@@ -31,7 +31,6 @@ int main() {
     while ((result = run_with_inputs(program, noun + 1, 1)) <= target) {
         noun += 1;
     }
-    std::cout << result << std::endl;
     while (run_with_inputs(program, noun, verb + 1) <= target) {
         verb += 1;
     }
