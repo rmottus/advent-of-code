@@ -1,16 +1,11 @@
 #include <iostream>
 #include <vector>
-#include <string>
 
 #include "intcode.h"
+#include "utils.h"
 
 int main() {
-    std::vector<int> program = std::vector<int>();
-
-    std::string line;
-    while (std::getline(std::cin, line, ',')) {
-        program.push_back(std::stoi(line));
-    }
+    std::vector<int> program = load_program_from_cin();
 
     IntCode computer(program);
     computer.push_input(5);

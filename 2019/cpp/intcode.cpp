@@ -3,6 +3,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <iostream>
+#include <exception>
 #include "intcode.h"
 
 // ------------- Private ------------- //
@@ -18,10 +19,10 @@ int IntCode::get_val(const int &i, const int &mode) {
         case 1:
             return value;
         default:
-            throw "Unknown parameter mode";
+            throw std::runtime_error("Unknown parameter mode");
     }
 
-    return ptr < length ? memory[ptr] : 0;
+    return ptr < memory.size() ? memory[ptr] : 0;
 }
 
 void IntCode::set_val(const int &i, const int &val, const int &mode) {
@@ -35,7 +36,7 @@ void IntCode::set_val(const int &i, const int &val, const int &mode) {
             ptr = i;
             break;
         default:
-            throw "Unknown parameter mode";
+            throw std::runtime_error("Unknown parameter mode");
     }
 
     memory[ptr] = val;
@@ -43,13 +44,8 @@ void IntCode::set_val(const int &i, const int &val, const int &mode) {
 
 // ------------- Public ------------- //
 
-IntCode::IntCode(const std::vector<int> &input)
-: length(input.size()), memory(new int[input.size()]), instr(0) {
-    // Copy the vector into a fixed sized memory
-    std::copy(input.begin(), input.end(), memory);
-}
-
-IntCodeState IntCode::execute() {
+void IntCode::execute() {
+    this->state = IntCodeState::RUNNING;
     while (true) {
         int full_op = memory[instr];
         int op = full_op % 100;
@@ -77,7 +73,8 @@ IntCodeState IntCode::execute() {
             case 3:
                 if (inputs.empty()) {
                     // Need to wait for inputs
-                    return IntCodeState::WAITING_FOR_INPUT;
+                    state = IntCodeState::WAITING_FOR_INPUT;
+                    return;
                 }
                 set_val(instr + 1, inputs.front(), out_mode);
                 inputs.pop();
@@ -127,7 +124,8 @@ IntCodeState IntCode::execute() {
                 break;
             }
             case 99:
-                return IntCodeState::COMPLETE;
+                state = IntCodeState::COMPLETE;
+                return;
             default:
                 std::ostringstream s = std::ostringstream();
                 s << "Unknown opcode: " << op << " at instr " << instr;
@@ -138,7 +136,7 @@ IntCodeState IntCode::execute() {
 
 int IntCode::pop_output() {
     if (outputs.empty()) {
-        throw "There are no outputs";
+        throw std::runtime_error("There are no outputs");
     }
     const int val = outputs.front();
     outputs.pop();
@@ -146,7 +144,7 @@ int IntCode::pop_output() {
 }
 
 void IntCode::print_memory() {
-    for (int i = 0; i < length; i++) {
+    for (int i = 0; i < memory.size(); i++) {
         if (i > 0) {
             std::cout << ",";
         }
